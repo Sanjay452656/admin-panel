@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Server, AlertTriangle, CheckCircle } from 'lucide-react';
 import TelemetryPanel from '@/components/machines/TelemetryPanel';
+import AssignmentsPanel from '@/components/machines/AssignmentsPanel';
 import CommandPanel from '@/components/machines/CommandPanel';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
@@ -19,7 +20,7 @@ export default function MachineDetailPage() {
   const { data: machine, isLoading, error } = useQuery({
     queryKey: ['machine', deviceVID],
     queryFn: async () => {
-      const res = await api.get(`/api/admin/machines/${deviceVID}`);
+      const res = await api.get('/api/admin/machines/' + deviceVID);
       return res.data.data;
     },
   });
@@ -27,7 +28,7 @@ export default function MachineDetailPage() {
   const { data: model } = useQuery({
     queryKey: ['model', machine?.model_id],
     queryFn: async () => {
-      const res = await api.get(`/api/admin/catalog/models/${machine.model_id}`);
+      const res = await api.get('/api/admin/catalog/models/' + machine.model_id);
       return res.data.data;
     },
     enabled: !!machine?.model_id,
@@ -72,33 +73,29 @@ export default function MachineDetailPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4">Status Overview</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Connection</span>
-              <span className={clsx(
-                "px-2.5 py-1 rounded-full text-xs font-medium flex items-center",
-                status === 'online' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+              <span className={clsx("px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
+                status === 'online' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
               )}>
-                <span className={clsx("w-1.5 h-1.5 rounded-full mr-1.5", status === 'online' ? "bg-green-500" : "bg-gray-500")}></span>
+                <span className={clsx("w-1.5 h-1.5 rounded-full", status === 'online' ? 'bg-green-500' : 'bg-gray-400')} />
                 {status.toUpperCase()}
               </span>
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Last Telemetry</span>
               <span className="text-sm font-medium text-gray-900">
                 {telemetryAt ? formatDistanceToNow(new Date(telemetryAt), { addSuffix: true }) : 'Never'}
               </span>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Hardware</span>
-              <span className={clsx(
-                "px-2.5 py-1 rounded-full text-xs font-medium flex items-center",
-                anomaly ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-              )}>
-                {anomaly ? <AlertTriangle className="w-3 h-3 mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
-                {anomaly ? 'ERROR' : 'OK'}
-              </span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                <CheckCircle className="w-3.5 h-3.5" />
+                OK
+              </div>
             </div>
           </div>
         </div>
@@ -119,6 +116,9 @@ export default function MachineDetailPage() {
           telemetry={telemetry} 
         />
       </div>
+
+      <AssignmentsPanel machineId={deviceVID} />
     </div>
   );
 }
+

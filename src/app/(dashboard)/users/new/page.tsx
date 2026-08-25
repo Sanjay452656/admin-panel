@@ -1,35 +1,51 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CreateUserPage() {
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('TECHNICIAN');
-  const [assignedMachines, setAssignedMachines] = useState('');
+  const [companyId, setCompanyId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  // Super Admins need to pick which company this user belongs to
+  const { data: companies } = useQuery({
+    queryKey: ['companies'],
+    queryFn: async () => {
+      const res = await api.get('/api/admin/companies');
+      return res.data.data || [];
+    },
+    enabled: isSuperAdmin,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
+    if (isSuperAdmin && !companyId) {
+      setError('Please select a company for this user.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const payload = {
-        name,
-        email,
-        password,
-        role,
-        assigned_machines: role === 'TECHNICIAN' ? assignedMachines.split(',').map(s => s.trim()).filter(Boolean) : []
-      };
-      
+      const payload: any = { name, email, password, role };
+      if (isSuperAdmin) payload.company_id = companyId;
+
       const res = await api.post('/api/admin/users', payload);
       if (res.data.success) {
         router.push('/users');
@@ -51,7 +67,7 @@ export default function CreateUserPage() {
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Create New User</h1>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
@@ -59,87 +75,59 @@ export default function CreateUserPage() {
               {error}
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700" htmlFor="name">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
+              <label className="block text-sm font-medium text-gray-700" htmlFor="name">Full Name</label>
+              <input id="name" type="text" required
                 className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+                value={name} onChange={(e) => setName(e.target.value)} />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700" htmlFor="email">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
+              <label className="block text-sm font-medium text-gray-700" htmlFor="email">Email Address</label>
+              <input id="email" type="email" required
                 className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-                Temporary Password
-              </label>
-              <input
-                id="password"
-                type="text"
-                required
+              <label className="block text-sm font-medium text-gray-700" htmlFor="password">Password</label>
+              <input id="password" type="password" required minLength={6}
                 className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+                value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700" htmlFor="role">
-                Role
-              </label>
-              <select
-                id="role"
+              <label className="block text-sm font-medium text-gray-700" htmlFor="role">Role</label>
+              <select id="role"
                 className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
+                value={role} onChange={(e) => setRole(e.target.value)}>
                 <option value="ADMIN">Admin</option>
                 <option value="TECHNICIAN">Technician</option>
               </select>
             </div>
+
+            {/* Company selector: only shown to SUPER_ADMIN */}
+            {isSuperAdmin && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700" htmlFor="company">Company</label>
+                <select id="company" required={isSuperAdmin}
+                  className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
+                  <option value="">-- Select a company --</option>
+                  {(companies || []).map((c: any) => (
+                    <option key={c._id} value={c._id}>{c.company_name}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">The user will be created under this company and can only access that company's data.</p>
+              </div>
+            )}
           </div>
 
-          {role === 'TECHNICIAN' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700" htmlFor="assignedMachines">
-                Assigned Machines (comma separated VIDs)
-              </label>
-              <textarea
-                id="assignedMachines"
-                rows={3}
-                placeholder="e.g. 6a67ad9aa95ea9b1fe046186, 7b88ad9aa95ea9b1fe046187"
-                className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={assignedMachines}
-                onChange={(e) => setAssignedMachines(e.target.value)}
-              ></textarea>
-            </div>
-          )}
-
           <div className="flex justify-end pt-4 border-t border-gray-100">
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors"
-            >
+            <button type="submit" disabled={loading}
+              className="px-6 py-2 text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors">
               {loading ? 'Creating...' : 'Create User'}
             </button>
           </div>
