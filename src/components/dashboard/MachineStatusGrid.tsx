@@ -70,7 +70,7 @@ export default function MachineStatusGrid() {
             <p className="text-sm">No machines provisioned</p>
           </div>
         ) : (
-          machineList.map((machine) => (
+          machineList.map((machine: any) => (
             <Link
               href={'/machines/' + machine.deviceVID}
               key={machine.deviceVID}

@@ -5,6 +5,8 @@ import { api } from '@/lib/api';
 import { Users, Plus, Edit2, Trash2 } from 'lucide-react';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import Link from 'next/link';
+import { useState } from 'react';
+import EditUserModal from '@/components/users/EditUserModal';
 
 export default function UsersPage() {
   return (
@@ -15,6 +17,7 @@ export default function UsersPage() {
 }
 
 function UsersContent() {
+  const [editingUser, setEditingUser] = useState(null);
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -88,12 +91,24 @@ function UsersContent() {
                       )}
                     </td>
                     <td className="py-4 px-6 text-right space-x-3">
-                      <button className="text-gray-400 hover:text-primary transition-colors">
-                        <Edit2 className="w-4 h-4 inline" />
-                      </button>
-                      <button className="text-gray-400 hover:text-red-600 transition-colors">
-                        <Trash2 className="w-4 h-4 inline" />
-                      </button>
+                      <button onClick={() => setEditingUser(user as any)} className="text-gray-400 hover:text-primary transition-colors">
+                          <Edit2 className="w-4 h-4 inline" />
+                        </button>
+                      <button 
+                          onClick={async () => {
+                            if (window.confirm("Are you sure you want to delete this user?")) {
+                              try {
+                                await api.delete(`/api/admin/users/${(user as any)._id}`);
+                                window.location.reload();
+                              } catch(e) {
+                                alert("Failed to delete user");
+                              }
+                            }
+                          }}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 inline" />
+                        </button>
                     </td>
                   </tr>
                 ))}
@@ -102,6 +117,17 @@ function UsersContent() {
           </div>
         )}
       </div>
+      {editingUser && (
+        <EditUserModal 
+          user={editingUser} 
+          onClose={() => setEditingUser(null)} 
+          onRefresh={() => {
+            // we should refetch query here, but we can't easily access queryClient here
+            // we will just reload the page for simplicity or rely on react-query auto-refetch
+            window.location.reload();
+          }} 
+        />
+      )}
     </div>
   );
 }

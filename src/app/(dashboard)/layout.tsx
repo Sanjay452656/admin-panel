@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import { getSocket } from '@/lib/socket';
 import { useMachineStore } from '@/store/machineStore';
 import { useAlertStore } from '@/store/alertStore';
+import AlertToast from '@/components/alerts/AlertToast';
 
 export default function DashboardLayout({
   children,
@@ -64,6 +65,7 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
+      <AlertToast />
     </ProtectedRoute>
   );
 }

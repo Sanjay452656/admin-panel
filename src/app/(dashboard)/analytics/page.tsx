@@ -80,7 +80,7 @@ function AnalyticsContent() {
                   <YAxis dataKey="machine_label" type="category" width={100} tick={{ fontSize: 10, fill: '#6b7280' }} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: number) => [`₹${value}`, 'Revenue']}
+                    formatter={(value: any) => [`₹${value}`, 'Revenue']}
                   />
                   <Bar dataKey="total_revenue" fill="#6366f1" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -105,7 +105,7 @@ function AnalyticsContent() {
                   <YAxis dataKey="product_name" type="category" width={110} tick={{ fontSize: 10, fill: '#6b7280' }} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: number, name: string) => [value, name === 'total_revenue' ? 'Revenue (₹)' : 'Qty Sold']}
+                    formatter={(value: any, name: any) => [value, name === 'total_revenue' ? 'Revenue (₹)' : 'Qty Sold']}
                   />
                   <Bar dataKey="total_quantity" name="total_quantity" fill="#10b981" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -140,7 +140,7 @@ function AnalyticsContent() {
                       <Cell key={index} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => [`₹${value}`, 'Revenue']} />
+                  <Tooltip formatter={(value: any) => [`₹${value}`, 'Revenue']} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

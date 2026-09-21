@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { Building2, Users, TrendingUp, ChevronDown, ChevronUp, X, ShoppingCart, IndianRupee, BarChart2 } from 'lucide-react';
+import Link from 'next/link';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, AreaChart, Area,
@@ -117,7 +118,7 @@ function CompanyAnalyticsPanel({ company }: { company: any }) {
                 <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => 'Rs.' + v} width={45} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.1)', fontSize: 12 }}
-                  formatter={(v: number) => ['Rs.' + v, 'Revenue']}
+                  formatter={(v: any) => ['Rs.' + v, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill={'url(#grad-' + cid + ')'} dot={false} activeDot={{ r: 4 }} />
               </AreaChart>
@@ -216,9 +217,18 @@ function CompaniesContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-        <p className="text-sm text-gray-500 mt-1">Click any company to view its analytics</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
+          <p className="text-sm text-gray-500 mt-1">Click any company to view its analytics</p>
+        </div>
+        <Link 
+          href="/companies/new"
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <span className="font-bold mr-2">+</span>
+          Add Company
+        </Link>
       </div>
 
       {/* Platform KPIs */}

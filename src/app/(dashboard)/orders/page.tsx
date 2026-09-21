@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { ShoppingCart } from 'lucide-react';
@@ -16,6 +17,7 @@ export default function OrdersPage() {
 }
 
 function OrdersContent() {
+  const [selectedMachineId, setSelectedMachineId] = useState('');
   const { data: machinesList } = useQuery({
     queryKey: ['machines'],
     queryFn: async () => {
@@ -32,9 +34,10 @@ function OrdersContent() {
   };
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['orders', 'all'],
+    queryKey: ['orders', 'all', selectedMachineId],
     queryFn: async () => {
-      const res = await api.get('/api/admin/orders');
+      const url = selectedMachineId ? `/api/admin/orders?machine_id=${selectedMachineId}` : '/api/admin/orders';
+      const res = await api.get(url);
       return res.data.orders || res.data.data || [];
     },
   });
@@ -54,6 +57,22 @@ function OrdersContent() {
             </p>
           )}
         </div>
+        {machinesList && machinesList.length > 0 && (
+          <div className="shrink-0">
+            <select
+              value={selectedMachineId}
+              onChange={(e) => setSelectedMachineId(e.target.value)}
+              className="w-full sm:w-64 rounded-xl border border-gray-200 py-2.5 pl-4 pr-10 text-sm focus:border-primary focus:ring-1 focus:ring-primary shadow-sm bg-white"
+            >
+              <option value="">All Machines</option>
+              {machinesList.map((m: any) => (
+                <option key={m._id} value={m._id}>
+                  {m.serialNumber || m.deviceVID || m._id} ({m.model})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

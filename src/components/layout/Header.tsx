@@ -1,6 +1,7 @@
 ﻿'use client';
 
-import { Bell, LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, Shield, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -10,7 +11,8 @@ import { useState } from 'react';
 
 export default function Header() {
   const { user, logout } = useAuthStore();
-  const { unreadCount } = useAlertStore();
+  const { unreadCount, alerts, clearAll } = useAlertStore();
+  const [showNotifications, setShowNotifications] = useState(false);
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -52,14 +54,47 @@ export default function Header() {
       </div>
 
       <div className="flex items-center space-x-3">
-        <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
-              {unreadCount}
-            </span>
+        <div className="relative">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg py-2 border border-gray-100 z-50">
+              <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
+                <span className="font-semibold text-gray-900">Notifications</span>
+                {alerts.length > 0 && (
+                  <button onClick={clearAll} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                    Clear All
+                  </button>
+                )}
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {alerts.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">No notifications</div>
+                ) : (
+                  alerts.map((alert: any) => (
+                    <div key={alert.id} className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-semibold text-gray-900">{alert.title}</span>
+                        <span className="text-[10px] text-gray-400">Just now</span>
+                      </div>
+                      <p className="text-xs text-gray-600 leading-snug">{alert.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           )}
-        </button>
+        </div>
 
         <div className="relative">
           <button
@@ -81,6 +116,14 @@ export default function Header() {
                 <div className="text-sm font-medium text-gray-900">{user?.email}</div>
                 <div className="text-xs text-gray-400 mt-0.5">{user?.role?.replace(/_/g, ' ')}</div>
               </div>
+              <Link
+                href="/settings"
+                onClick={() => setShowDropdown(false)}
+                className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Settings className="w-4 h-4 mr-2 text-gray-400" />
+                Edit Profile
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

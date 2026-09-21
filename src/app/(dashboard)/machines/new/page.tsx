@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useQuery } from '@tanstack/react-query';
 import { QrCode, ArrowLeft, Keyboard, Camera } from 'lucide-react';
 import Link from 'next/link';
 import QRScanner from '@/components/machines/QRScanner';
@@ -12,17 +14,32 @@ export default function ProvisionMachinePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [inputMode, setInputMode] = useState<'scan' | 'manual'>('scan');
+  const [companyId, setCompanyId] = useState('');
   const router = useRouter();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
+  const { data: companies } = useQuery({
+    queryKey: ['companies'],
+    queryFn: async () => {
+      const res = await api.get('/api/admin/companies');
+      return res.data.data || [];
+    },
+    enabled: isSuperAdmin,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!serialNumber) return;
+    if (isSuperAdmin && !companyId) { setError('Please select a company.'); return; }
     
     setLoading(true);
     setError('');
     
     try {
-      const res = await api.post('/api/admin/machines/provision', { serialNumber });
+      const payload: any = { serialNumber };
+      if (isSuperAdmin) payload.company_id = companyId;
+      const res = await api.post('/api/admin/machines/provision', payload);
       if (res.data.success) {
         router.push('/machines');
       } else {
@@ -94,6 +111,20 @@ export default function ProvisionMachinePage() {
           {error && (
             <div className="p-3 text-sm text-red-500 bg-red-100 border border-red-200 rounded">
               {error}
+            </div>
+          )}
+          
+          {isSuperAdmin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700" htmlFor="company">Company *</label>
+              <select id="company" required={isSuperAdmin}
+                className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
+                <option value="">-- Select a company --</option>
+                {(companies || []).map((c: any) => (
+                  <option key={c._id} value={c._id}>{c.company_name}</option>
+                ))}
+              </select>
             </div>
           )}
           

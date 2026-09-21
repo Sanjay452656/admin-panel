@@ -85,7 +85,7 @@ export default function RevenueChart() {
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={(v) => 'Rs.' + v} width={55} />
               <Tooltip
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.12)', fontSize: '13px' }}
-                formatter={(value: number, name: string) => [name === 'revenue' ? 'Rs.' + value : value, name === 'revenue' ? 'Revenue' : 'Orders']}
+                formatter={(value: any, name: any) => [name === 'revenue' ? 'Rs.' + value : value, name === 'revenue' ? 'Revenue' : 'Orders']}
                 labelStyle={{ color: '#374151', fontWeight: 600, marginBottom: '4px' }}
               />
               <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2.5} fill="url(#revenueGrad)" dot={false} activeDot={{ r: 5, fill: '#6366f1' }} />
