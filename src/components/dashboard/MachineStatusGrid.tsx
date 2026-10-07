@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMachineStore } from '@/store/machineStore';
 import { useQuery } from '@tanstack/react-query';
@@ -37,7 +37,7 @@ export default function MachineStatusGrid() {
     anomalyDetected: machines.get(m.deviceVID || m._id)?.anomalyDetected || false,
   }));
 
-  const onlineCount  = machineList.filter(m => m.status === 'online').length;
+  const onlineCount  = machineList.filter((m: { status: string }) => m.status === 'online').length;
   const offlineCount = machineList.length - onlineCount;
 
   return (
@@ -96,7 +96,7 @@ export default function MachineStatusGrid() {
                   <p className="font-semibold text-gray-900 text-sm truncate">{machine.label}</p>
                   <p className="text-xs text-gray-400 truncate">
                     {machine.anomalyDetected
-                      ? <span className="text-red-500 font-medium">⚠ Critical Alert</span>
+                      ? <span className="text-red-500 font-medium">? Critical Alert</span>
                       : machine.status === 'online' ? 'Online' : 'Offline'}
                   </p>
                 </div>

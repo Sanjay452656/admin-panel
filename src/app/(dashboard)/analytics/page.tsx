@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -76,11 +76,11 @@ function AnalyticsContent() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueByMachine} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
-                  <XAxis type="number" tickFormatter={(val) => `₹${val}`} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                  <XAxis type="number" tickFormatter={(val) => `?${val}`} tick={{ fontSize: 12, fill: '#6b7280' }} />
                   <YAxis dataKey="machine_label" type="category" width={100} tick={{ fontSize: 10, fill: '#6b7280' }} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any) => [`₹${value}`, 'Revenue']}
+                    formatter={(value: any) => [`?${value}`, 'Revenue']}
                   />
                   <Bar dataKey="total_revenue" fill="#6366f1" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -105,7 +105,7 @@ function AnalyticsContent() {
                   <YAxis dataKey="product_name" type="category" width={110} tick={{ fontSize: 10, fill: '#6b7280' }} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any, name: any) => [value, name === 'total_revenue' ? 'Revenue (₹)' : 'Qty Sold']}
+                    formatter={(value: any, name: any) => [value, name === 'total_revenue' ? 'Revenue (?)' : 'Qty Sold']}
                   />
                   <Bar dataKey="total_quantity" name="total_quantity" fill="#10b981" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -134,13 +134,13 @@ function AnalyticsContent() {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ method, total_revenue }) => `${method}: ₹${total_revenue}`}
+                    label={(props: any) => { const { method, total_revenue } = props; return `${method}: ?${total_revenue}` }}
                   >
                     {paymentMethods.map((_: any, index: number) => (
                       <Cell key={index} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [`₹${value}`, 'Revenue']} />
+                  <Tooltip formatter={(value: any) => [`?${value}`, 'Revenue']} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -154,7 +154,7 @@ function AnalyticsContent() {
                   <span className="font-medium text-gray-700">{item.method}</span>
                 </div>
                 <div className="text-sm text-gray-500">
-                  {item.total_orders} orders &bull; <span className="font-semibold text-gray-800">₹{item.total_revenue}</span>
+                  {item.total_orders} orders &bull; <span className="font-semibold text-gray-800">?{item.total_revenue}</span>
                 </div>
               </div>
             ))}
@@ -184,7 +184,7 @@ function AnalyticsContent() {
                     <td className="py-2 font-medium text-gray-900">{item.product_name}</td>
                     <td className="py-2 text-right text-gray-600">{item.total_quantity}</td>
                     <td className="py-2 text-right text-gray-600">{item.times_ordered}</td>
-                    <td className="py-2 text-right font-semibold text-gray-900">₹{item.total_revenue}</td>
+                    <td className="py-2 text-right font-semibold text-gray-900">?{item.total_revenue}</td>
                   </tr>
                 ))}
               </tbody>
